@@ -4,8 +4,44 @@ const ctx = canvas.getContext('2d');
 canvas.width = 1024;
 canvas.height = 576;
 
-ctx.fillStyle = 'white';
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+const collisionsMap = [];
+for (let i = 0; i < collisions.length; i += 70) {
+  // 70 stands for width of the map (squares no)
+  collisionsMap.push(collisions.slice(i, 70 + i));
+}
+
+class Boundary {
+  static width = 48;
+  static height = 48;
+  constructor({ position }) {
+    this.position = position;
+    this.width = 48; // 12px per tile but we use 400% map
+    this.height = 48;
+  }
+
+  draw() {
+    ctx.fillStyle = 'red';
+    canvas.fillRect(this.position.x, this.position.y, this.width, this.height);
+  }
+}
+
+const boundaries = [];
+
+collisionsMap.forEach((row, i) => {
+  row.forEach((symbol, j) => {
+    if (symbol === 1025)
+      boundaries.push(
+        new Boundary({
+          position: {
+            x: j * Boundary.width,
+            y: i * Boundary.height,
+          },
+        })
+      );
+  });
+});
+
+console.log(boundaries);
 
 const mapImage = new Image();
 mapImage.src = './images/XmonMap-Area1.png';
@@ -62,10 +98,10 @@ function animate() {
     playerImage.height
   );
 
-  if (keys.w.pressed && lastKey === 'w') background.position.y += 3;
-  else if (keys.a.pressed && lastKey === 'a') background.position.x += 3;
-  else if (keys.s.pressed && lastKey === 's') background.position.y -= 3;
-  else if (keys.d.pressed && lastKey === 'd') background.position.x -= 3;
+  if (keys.w.pressed && lastKey === 'w') background.position.y += 2;
+  else if (keys.a.pressed && lastKey === 'a') background.position.x += 2;
+  else if (keys.s.pressed && lastKey === 's') background.position.y -= 2;
+  else if (keys.d.pressed && lastKey === 'd') background.position.x -= 2;
 }
 animate();
 
