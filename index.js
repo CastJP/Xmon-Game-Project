@@ -21,11 +21,15 @@ class Boundary {
 
   draw() {
     ctx.fillStyle = 'red';
-    canvas.fillRect(this.position.x, this.position.y, this.width, this.height);
+    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
 }
 
 const boundaries = [];
+const offset = {
+  x: -64,
+  y: -410,
+};
 
 collisionsMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
@@ -33,8 +37,8 @@ collisionsMap.forEach((row, i) => {
       boundaries.push(
         new Boundary({
           position: {
-            x: j * Boundary.width,
-            y: i * Boundary.height,
+            x: j * Boundary.width + offset.x,
+            y: i * Boundary.height + offset.y,
           },
         })
       );
@@ -62,8 +66,8 @@ class Sprite {
 
 const background = new Sprite({
   position: {
-    x: -64,
-    y: -410,
+    x: offset.x,
+    y: offset.y,
   },
   mapImage: mapImage,
 });
@@ -86,6 +90,9 @@ const keys = {
 function animate() {
   window.requestAnimationFrame(animate);
   background.draw();
+  boundaries.forEach((boundary) => {
+    boundary.draw();
+  });
   ctx.drawImage(
     playerImage,
     0, // Cropping starting point on X axis
