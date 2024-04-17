@@ -45,8 +45,6 @@ collisionsMap.forEach((row, i) => {
   });
 });
 
-console.log(boundaries);
-
 const mapImage = new Image();
 mapImage.src = './images/XmonMap-Area1.png';
 
@@ -54,22 +52,47 @@ const playerImage = new Image();
 playerImage.src = './images/playerDown.png';
 
 class Sprite {
-  constructor({ position, velocity, mapImage }) {
+  constructor({ position, velocity, image, frames = { max: 1 } }) {
     this.position = position;
-    this.mapImage = mapImage;
+    this.image = image;
+    this.frames = frames;
   }
 
   draw() {
-    ctx.drawImage(this.mapImage, this.position.x, this.position.y);
+    ctx.drawImage(
+      this.image,
+      0, // Cropping starting point on X axis
+      0, // Cropping starting point on Y axis
+      this.image.width / this.frames.max, // Crop width
+      this.image.height, // Crop height
+      this.position.x,
+      this.position.y,
+      this.image.width / this.frames.max,
+      this.image.height
+    );
   }
 }
+
+//
+//       ,
+
+const player = new Sprite({
+  position: {
+    x: canvas.width / 2 - 192 / 4 / 2, // actual position of render on the screen,
+    y: canvas.height / 2 - 68 / 2,
+  },
+  image: playerImage,
+  frames: {
+    max: 4,
+  },
+});
 
 const background = new Sprite({
   position: {
     x: offset.x,
     y: offset.y,
   },
-  mapImage: mapImage,
+  image: mapImage,
 });
 
 const keys = {
@@ -87,28 +110,44 @@ const keys = {
   },
 };
 
+const testBoundary = new Boundary({
+  position: {
+    x: 400,
+    y: 400,
+  },
+});
+
+// All objects that will be moved on the map
+const movables = [background, testBoundary];
+
 function animate() {
   window.requestAnimationFrame(animate);
   background.draw();
-  boundaries.forEach((boundary) => {
-    boundary.draw();
-  });
-  ctx.drawImage(
-    playerImage,
-    0, // Cropping starting point on X axis
-    0, // Cropping starting point on Y axis
-    playerImage.width / 4, // Crop width
-    playerImage.height, // Crop height
-    canvas.width / 2 - playerImage.width / 4 / 2, // 4 below - actual position of render on the screen
-    canvas.height / 2 - playerImage.height / 2,
-    playerImage.width / 4,
-    playerImage.height
-  );
+  // boundaries.forEach((boundary) => {
+  //   boundary.draw();
+  // });
+  testBoundary.draw();
+  player.draw();
 
-  if (keys.w.pressed && lastKey === 'w') background.position.y += 2;
-  else if (keys.a.pressed && lastKey === 'a') background.position.x += 2;
-  else if (keys.s.pressed && lastKey === 's') background.position.y -= 2;
-  else if (keys.d.pressed && lastKey === 'd') background.position.x -= 2;
+  // if(playerImage.position.x + player.width)
+
+  if (keys.w.pressed && lastKey === 'w') {
+    movables.forEach((movable) => {
+      movable.position.y += 2;
+    });
+  } else if (keys.a.pressed && lastKey === 'a') {
+    movables.forEach((movable) => {
+      movable.position.x += 2;
+    });
+  } else if (keys.s.pressed && lastKey === 's') {
+    movables.forEach((movable) => {
+      movable.position.y -= 2;
+    });
+  } else if (keys.d.pressed && lastKey === 'd') {
+    movables.forEach((movable) => {
+      movable.position.x -= 2;
+    });
+  }
 }
 animate();
 
