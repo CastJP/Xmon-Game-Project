@@ -56,6 +56,10 @@ class Sprite {
     this.position = position;
     this.image = image;
     this.frames = frames;
+    this.image.onload = () => {
+      this.width = this.image.width / this.frames.max;
+      this.height = this.image.height;
+    };
   }
 
   draw() {
@@ -118,18 +122,32 @@ const testBoundary = new Boundary({
 });
 
 // All objects that will be moved on the map
-const movables = [background, testBoundary];
+const movables = [background, ...boundaries];
+
+function rectangularCollision({ rect1, rect2 }) {
+  return (
+    rect1.position.x + rect1.width >= rect2.position.x &&
+    rect1.position.x <= rect2.position.x + rect2.width &&
+    rect1.position.y <= rect2.position.y + rect2.height &&
+    rect1.position.y + rect1.height >= rect2.position.y
+  );
+}
 
 function animate() {
   window.requestAnimationFrame(animate);
   background.draw();
-  // boundaries.forEach((boundary) => {
-  //   boundary.draw();
-  // });
-  testBoundary.draw();
+  boundaries.forEach((boundary) => {
+    boundary.draw();
+    if (
+      rectangularCollision({
+        rect1: player,
+        rect2: boundary,
+      })
+    ) {
+      console.log('coliding');
+    }
+  });
   player.draw();
-
-  // if(playerImage.position.x + player.width)
 
   if (keys.w.pressed && lastKey === 'w') {
     movables.forEach((movable) => {
