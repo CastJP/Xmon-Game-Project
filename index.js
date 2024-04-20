@@ -15,12 +15,12 @@ class Boundary {
   static height = 48;
   constructor({ position }) {
     this.position = position;
-    this.width = 48; // 12px per tile but we use 400% map
-    this.height = 48;
+    this.width = 36; // 12px per tile but we use 400% map
+    this.height = 36;
   }
 
   draw() {
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.0)';
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
   }
 }
@@ -28,7 +28,7 @@ class Boundary {
 const boundaries = [];
 const offset = {
   x: -64,
-  y: -410,
+  y: -430,
 };
 
 collisionsMap.forEach((row, i) => {
@@ -37,7 +37,7 @@ collisionsMap.forEach((row, i) => {
       boundaries.push(
         new Boundary({
           position: {
-            x: j * Boundary.width + offset.x,
+            x: j * Boundary.width + offset.x + 6,
             y: i * Boundary.height + offset.y,
           },
         })
@@ -114,13 +114,6 @@ const keys = {
   },
 };
 
-const testBoundary = new Boundary({
-  position: {
-    x: 400,
-    y: 400,
-  },
-});
-
 // All objects that will be moved on the map
 const movables = [background, ...boundaries];
 
@@ -128,8 +121,9 @@ function rectangularCollision({ rect1, rect2 }) {
   return (
     rect1.position.x + rect1.width >= rect2.position.x &&
     rect1.position.x <= rect2.position.x + rect2.width &&
-    rect1.position.y <= rect2.position.y + rect2.height &&
+    rect1.position.y + 24 <= rect2.position.y + rect2.height &&
     rect1.position.y + rect1.height >= rect2.position.y
+    // + 24 = player's head can now be a bit 'above' certain objects - matter of more immersive perspective
   );
 }
 
@@ -138,33 +132,90 @@ function animate() {
   background.draw();
   boundaries.forEach((boundary) => {
     boundary.draw();
-    if (
-      rectangularCollision({
-        rect1: player,
-        rect2: boundary,
-      })
-    ) {
-      console.log('coliding');
-    }
   });
   player.draw();
 
+  let moving = true;
   if (keys.w.pressed && lastKey === 'w') {
-    movables.forEach((movable) => {
-      movable.position.y += 2;
-    });
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i];
+      if (
+        rectangularCollision({
+          rect1: player,
+          rect2: {
+            ...boundary,
+            position: { x: boundary.position.x, y: boundary.position.y + 2 },
+          },
+        })
+      ) {
+        moving = false;
+        break;
+      }
+    }
+    if (moving)
+      movables.forEach((movable) => {
+        movable.position.y += 2;
+      });
   } else if (keys.a.pressed && lastKey === 'a') {
-    movables.forEach((movable) => {
-      movable.position.x += 2;
-    });
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i];
+      if (
+        rectangularCollision({
+          rect1: player,
+          rect2: {
+            ...boundary,
+            position: { x: boundary.position.x + 2, y: boundary.position.y },
+          },
+        })
+      ) {
+        moving = false;
+        break;
+      }
+    }
+    if (moving)
+      movables.forEach((movable) => {
+        movable.position.x += 2;
+      });
   } else if (keys.s.pressed && lastKey === 's') {
-    movables.forEach((movable) => {
-      movable.position.y -= 2;
-    });
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i];
+      if (
+        rectangularCollision({
+          rect1: player,
+          rect2: {
+            ...boundary,
+            position: { x: boundary.position.x, y: boundary.position.y - 2 },
+          },
+        })
+      ) {
+        moving = false;
+        break;
+      }
+    }
+    if (moving)
+      movables.forEach((movable) => {
+        movable.position.y -= 2;
+      });
   } else if (keys.d.pressed && lastKey === 'd') {
-    movables.forEach((movable) => {
-      movable.position.x -= 2;
-    });
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i];
+      if (
+        rectangularCollision({
+          rect1: player,
+          rect2: {
+            ...boundary,
+            position: { x: boundary.position.x - 2, y: boundary.position.y },
+          },
+        })
+      ) {
+        moving = false;
+        break;
+      }
+    }
+    if (moving)
+      movables.forEach((movable) => {
+        movable.position.x -= 2;
+      });
   }
 }
 animate();
